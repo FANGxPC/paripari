@@ -3,6 +3,12 @@
 [![Built with Paritok](https://img.shields.io/badge/Built%20with-Paritok-1f2d3d)](https://github.com/Paritok-official/paritok-4b-v1)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-paripari.onrender.com-22c55e)](https://paripari.onrender.com/)
 
+## Demo Video:
+
+https://github.com/user-attachments/assets/bc5e4ce5-b554-4b7d-bf63-4a82e975294d
+
+
+
 PariPari is an intelligent, repository-aware AI Copilot designed to help you quickly understand codebases, track down bugs, and propose patches. 
 
 What makes PariPari special is its integration with **Paritok Compression**. Instead of using compression merely as a cost-optimization hack, PariPari uses Paritok as a **structural capability enabler**. It maps the *entire* architecture of massive monorepos into a tiny token footprint, giving the agent true omniscient repository awareness.
