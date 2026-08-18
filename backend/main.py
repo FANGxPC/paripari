@@ -21,6 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from agent import run_agent
+from cache_paths import index_cache_path, repo_cache_key
 from telemetry import fetch_telemetry
 
 # ── Config ────────────────────────────────────────────────────────────────────
@@ -135,8 +136,8 @@ async def index_repo(req: IndexRequest):
     except ValueError:
         return {"status": "error", "message": "Invalid GitHub URL"}
 
-    key = f"{info['owner']}_{info['repo']}"
-    cache_path = os.path.join(os.path.dirname(__file__), "cache", f"{key}_index.json".replace("-", "_"))
+    key = repo_cache_key(info["owner"], info["repo"])
+    cache_path = index_cache_path(info["owner"], info["repo"])
 
     if os.path.exists(cache_path):
         return {"status": "ready", "message": "Index already exists"}
@@ -172,7 +173,7 @@ async def telemetry():
         "estimated_cost_saved": float # USD saved vs uncompressed
       }
     """
-    return await fetch_telemetry(paritok_url=PARITOK_URL, mock_mode=MOCK_MODE)
+    return await fetch_telemetry()
 
 # ── Static Frontend ───────────────────────────────────────────────────────────
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../frontend/out")
