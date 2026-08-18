@@ -133,6 +133,21 @@ def _kind_for_tool(tool_name: str) -> paritok_service.Kind:
     return "tool_result"
 
 
+def _collect_file_paths(node: dict, paths: list[str]) -> None:
+    if node.get("type") == "file":
+        paths.append(node.get("path", ""))
+        return
+    if node.get("type") == "dir":
+        for child in node.get("children", {}).values():
+            _collect_file_paths(child, paths)
+
+
+def _count_index_path_chars(node: dict) -> int:
+    if node.get("type") == "file":
+        return len(node.get("path", ""))
+    return sum(_count_index_path_chars(child) for child in node.get("children", {}).values())
+
+
 async def _execute_and_compress(
     tool_name: str,
     tool_args: dict,
@@ -159,16 +174,9 @@ async def _execute_and_compress(
         if os.path.exists(cache_path):
             with open(cache_path, "r", encoding="utf-8") as f:
                 full_index = json.load(f)
-            
-            def extract_paths(node, paths_list):
-                if node.get("type") == "file":
-                    paths_list.append(node.get("path", ""))
-                elif node.get("type") == "dir" and "children" in node:
-                    for child in node["children"].values():
-                        extract_paths(child, paths_list)
-            
+
             paths = []
-            extract_paths(full_index, paths)
+            _collect_file_paths(full_index, paths)
             compressed_map_text = "\n".join(paths)
             if len(compressed_map_text) > 1500:
                 compressed_map_text = compressed_map_text[:1500] + "\n... [truncated - use list_directory to explore deeper folders!]"
@@ -278,11 +286,7 @@ async def run_agent(
                 full_index = json.load(f)
             full_json = json.dumps(full_index)
             # Simulate what the map saving looks like — just count for dashboard
-            def _count_paths(node):
-                if node.get("type") == "file":
-                    return len(node.get("path", ""))
-                return sum(_count_paths(c) for c in node.get("children", {}).values())
-            compressed_chars = _count_paths(full_index)
+            compressed_chars = _count_index_path_chars(full_index)
             orig_tokens = paritok_service._estimate_tokens(full_json)
             comp_tokens = max(1, compressed_chars // 4)
             paritok_service._stats.total_requests += 1
