@@ -172,7 +172,7 @@ async def telemetry():
         "estimated_cost_saved": float # USD saved vs uncompressed
       }
     """
-    return await fetch_telemetry(paritok_url=PARITOK_URL, mock_mode=MOCK_MODE)
+    return await fetch_telemetry()
 
 # ── Static Frontend ───────────────────────────────────────────────────────────
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../frontend/out")
