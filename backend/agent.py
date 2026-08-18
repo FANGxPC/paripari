@@ -22,6 +22,7 @@ from openai import AsyncOpenAI
 
 import mock_data
 import paritok_service
+from cache_paths import index_cache_path
 from github_service import GitHubService
 
 # ── Tool schemas ──────────────────────────────────────────────────────────────
@@ -146,8 +147,7 @@ async def _execute_and_compress(
     """
     # 1. Execute tool → raw output
     if tool_name == "view_compressed_map":
-        info = f"{github.owner}_{github.repo}"
-        cache_path = os.path.join(os.path.dirname(__file__), "cache", f"{info}_index.json".replace("-", "_"))
+        cache_path = index_cache_path(github.owner, github.repo)
         if not os.path.exists(cache_path):
             try:
                 import indexer
@@ -270,8 +270,7 @@ async def run_agent(
     # We record the index savings for the dashboard, but keep the prompt tiny
     # so the LLM + max_tokens stays well under Groq's TPM limit.
     # Actual compression happens on every list_directory / read_file call below.
-    info = f"{github.owner}_{github.repo}"
-    cache_path = os.path.join(os.path.dirname(__file__), "cache", f"{info}_index.json".replace("-", "_"))
+    cache_path = index_cache_path(github.owner, github.repo)
 
     if os.path.exists(cache_path):
         try:
