@@ -3,18 +3,10 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { streamChat, type AgentEvent, type ToolCall } from "@/lib/api";
+import { BACKEND_URL, streamChat, type AgentEvent, type ToolCall } from "@/lib/api";
 import { CodeViewer } from "./CodeViewer";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Terminal, Loader2, Bot, User, Code2, Link as LinkIcon, Database, CheckCircle2 } from "lucide-react";
-
-const getBackendUrl = () => {
-  if (process.env.NEXT_PUBLIC_BACKEND_URL) return process.env.NEXT_PUBLIC_BACKEND_URL;
-  if (typeof window !== "undefined" && window.location.port === "3001") return "http://localhost:8000";
-  if (typeof window !== "undefined" && window.location.port === "3000") return "http://localhost:8000";
-  return "";
-};
-const BACKEND = getBackendUrl();
 
 const TOOL_LABELS: Record<string, string> = {
   list_directory: "Listing directory",
@@ -52,7 +44,7 @@ export function ChatPanel() {
   useEffect(() => {
     if (!repoUrl || !repoUrl.includes("github.com/")) return;
     const timer = setTimeout(() => {
-      fetch(`${BACKEND}/api/index`, {
+      fetch(`${BACKEND_URL}/api/index`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ repo_url: repoUrl }),
