@@ -2,13 +2,18 @@
  * lib/api.ts — Backend client utilities
  */
 
+const LOCAL_FRONTEND_PORTS = new Set(["3000", "3001"]);
+const LOCAL_BACKEND_URL = "http://localhost:8000";
+
 const getBackendUrl = () => {
-  if (process.env.NEXT_PUBLIC_BACKEND_URL) return process.env.NEXT_PUBLIC_BACKEND_URL;
-  if (typeof window !== "undefined" && window.location.port === "3001") return "http://localhost:8000";
-  if (typeof window !== "undefined" && window.location.port === "3000") return "http://localhost:8000";
-  return "";
+  const configuredUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+  if (configuredUrl) return configuredUrl;
+
+  if (typeof window === "undefined") return "";
+  return LOCAL_FRONTEND_PORTS.has(window.location.port) ? LOCAL_BACKEND_URL : "";
 };
-const BACKEND = getBackendUrl();
+
+export const BACKEND_URL = getBackendUrl();
 
 export interface ChatRequest {
   repo_url: string;
@@ -49,7 +54,7 @@ export async function streamChat(
   onEvent: (event: AgentEvent) => void,
   onDone: () => void
 ): Promise<void> {
-  const response = await fetch(`${BACKEND}/chat`, {
+  const response = await fetch(`${BACKEND_URL}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(req),
@@ -95,7 +100,7 @@ export async function streamChat(
  * Fetch telemetry stats from the backend.
  */
 export async function fetchTelemetry(): Promise<TelemetryData> {
-  const res = await fetch(`${BACKEND}/api/telemetry`, { cache: "no-store" });
+  const res = await fetch(`${BACKEND_URL}/api/telemetry`, { cache: "no-store" });
   if (!res.ok) throw new Error("Telemetry fetch failed");
   return res.json();
 }
