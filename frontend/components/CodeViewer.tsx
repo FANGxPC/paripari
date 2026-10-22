@@ -21,21 +21,34 @@ const TOOL_ICONS: Record<string, React.ReactNode> = {
   write_pr_summary: <FileEdit size={16} />,
 };
 
+const DEFAULT_TOOL_ICON = <Activity size={16} />;
+
 function isDiff(text: string): boolean {
   return text.startsWith("---") || text.startsWith("@@") || text.startsWith("+++ ");
+}
+
+function getDiffLineClass(line: string): string {
+  if (line.startsWith("+") && !line.startsWith("+++")) return "text-brand-400 bg-brand-500/10";
+  if (line.startsWith("-") && !line.startsWith("---")) return "text-red-400 bg-red-500/10";
+  if (line.startsWith("@@")) return "text-blue-400 bg-blue-500/10";
+  if (line.startsWith("---") || line.startsWith("+++")) return "text-foreground font-semibold";
+  return "text-gray-400";
+}
+
+function getInputPath(input: Record<string, unknown>): string {
+  const path = input.path;
+  if (typeof path === "string") return path;
+  const title = input.title;
+  if (typeof title === "string") return title;
+  return "";
 }
 
 function DiffView({ content }: { content: string }) {
   return (
     <pre className="text-xs font-mono leading-relaxed overflow-x-auto rounded-lg">
       {content.split("\n").map((line, i) => {
-        let cls = "text-gray-400";
-        if (line.startsWith("+") && !line.startsWith("+++")) cls = "text-brand-400 bg-brand-500/10";
-        else if (line.startsWith("-") && !line.startsWith("---")) cls = "text-red-400 bg-red-500/10";
-        else if (line.startsWith("@@")) cls = "text-blue-400 bg-blue-500/10";
-        else if (line.startsWith("---") || line.startsWith("+++")) cls = "text-foreground font-semibold";
         return (
-          <div key={i} className={`${cls} px-4 py-[2px]`}>
+          <div key={i} className={`${getDiffLineClass(line)} px-4 py-[2px]`}>
             {line || "\u00A0"}
           </div>
         );
@@ -69,8 +82,8 @@ export function CodeViewer({ toolCalls, isRunning }: CodeViewerProps) {
   return (
     <div className="flex flex-col gap-6 max-w-4xl mx-auto w-full">
       {toolCalls.map((tc, i) => {
-        const icon = TOOL_ICONS[tc.tool] || <Activity size={16} />;
-        const inputPath = (tc.input.path as string) || (tc.input.title as string) || "";
+        const icon = TOOL_ICONS[tc.tool] ?? DEFAULT_TOOL_ICON;
+        const inputPath = getInputPath(tc.input);
         const outputText = typeof tc.output === "string" ? tc.output : JSON.stringify(tc.output, null, 2);
 
         return (
