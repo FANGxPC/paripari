@@ -9,7 +9,6 @@ __pycache__/
 .env
 backend/.env
 
-# Caches / indexes (generated at runtime)
 backend/cache/
 
 # Node
